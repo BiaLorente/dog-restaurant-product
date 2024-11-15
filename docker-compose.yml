@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: temp_password
+      MYSQL_DATABASE: dogrestaurantproduct
+      MYSQL_USER: dogadmin
+      MYSQL_PASSWORD: temp_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dognet
+
+volumes:
+  mysql_data:
+
+networks:
+  dognet:
