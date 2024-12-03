@@ -13,9 +13,9 @@ import { ProdutoInput } from '../input/produto-input';
 import { CategoriaOutput } from '../output/categoria-output';
 import { ProdutoOutput } from '../output/produto-output';
 import { ApiTags } from '@nestjs/swagger';
-import { Produto } from 'src/domain/entities/Produto';
-import { Categoria } from 'src/domain/entities/Categoria';
-import { IProdutoUseCase } from 'src/domain/use-cases/produto-use-case.interface';
+import { Produto } from '../../domain/entities/Produto';
+import { Categoria } from '../../domain/entities/Categoria';
+import { IProdutoUseCase } from '../../domain/use-cases/produto-use-case.interface';
 
 @ApiTags('Produtos')
 @Controller('produtos')
