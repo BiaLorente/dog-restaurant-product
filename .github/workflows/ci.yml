@@ -15,16 +15,32 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
     - name: Install dependencies
       run: npm install
 
     - name: Build project
       run: npm run build
 
-    - name: Run unit tests
-      run: npm test
+    - name: Run tests and generate coverage
+      run: npm run test -- --coverage
+
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@v2
+      with:
+        args: >
+          -Dsonar.sources=src
+          -Dsonar.tests=src
+          -Dsonar.test.inclusions=**/*.spec.ts
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy:
     needs: build
@@ -34,22 +50,19 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws-region: us-east-1
 
     - name: Log in to Amazon ECR
-      id: ecr-login
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Create ECR repository if it doesn't exist
-      if: success()
       run: |
         aws ecr describe-repositories --repository-names dog-restaurant-product || aws ecr create-repository --repository-name dog-restaurant-product  
     
@@ -61,13 +74,12 @@ jobs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
     - name: Replace AWS Account ID in deployment.yaml
-      if: success()
       run: |
         sed -i 's/<AWS_ACCOUNT_ID>/${{ secrets.AWS_ACCOUNT_ID }}/g' ./k8s/deployment.yaml
         
     - name: Apply Kubernetes manifests
-      if: success()
       run: |
         aws eks --region us-east-1 update-kubeconfig --name dog-eks-cluster
         kubectl apply -f ./k8s/deployment.yaml
@@ -80,7 +92,3 @@ jobs:
       run: |
         aws eks --region us-east-1 update-kubeconfig --name dog-eks-cluster
         kubectl set image deployment/dog-restaurant-product dog-restaurant-product=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }} 
