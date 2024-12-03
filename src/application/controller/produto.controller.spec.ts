@@ -188,4 +188,79 @@ describe('ProdutoController', () => {
       );
     });
   });
+
+  describe('getByName', () => {
+    it('should return a product by Name', async () => {
+      const produto = new Produto(
+        'Produto1',
+        'Categoria 1',
+        100,
+        'Description',
+        true,
+        '1',
+      );
+      produtoUseCaseMock.getByNome.mockResolvedValue(produto);
+
+      const result = await controller.getByName('Produto1');
+
+      expect(result).toEqual(
+        new ProdutoOutput(
+          'Produto1',
+          '1',
+          'Categoria 1',
+          100,
+          'Description',
+          true,
+        ),
+      );
+    });
+
+    it('should throw NotFoundException if product by name is not found', async () => {
+      produtoUseCaseMock.getByNome.mockResolvedValue(null);
+
+      await expect(controller.getByName('Produto1')).rejects.toThrow(
+        new NotFoundException('Produto com nome Produto1 não encotrado.'),
+      );
+    });
+  });
+
+  describe('getByCategory', () => {
+    it('should return a list of products by category name', async () => {
+      const produtos = [
+        new Produto('Produto 1', 'Categoria 1', 100, 'Description', true, '1'),
+      ];
+      produtoUseCaseMock.getByCategoria.mockResolvedValue(produtos);
+
+      const result = await controller.getByCategory('Categoria 1');
+
+      expect(result).toEqual([
+        new ProdutoOutput('1', 'Produto 1', 'Categoria 1', 100, 'Description'),
+      ]);
+    });
+
+    it('should throw NotFoundException if category is not found', async () => {
+      produtoUseCaseMock.getByCategoria.mockResolvedValue(null);
+
+      await expect(controller.getByCategory('Categoria1')).rejects.toThrow(
+        new NotFoundException(
+          'Produto com categoria Categoria1 não encontrado.',
+        ),
+      );
+    });
+  });
+
+  describe('createCategory', () => {
+    it('should create a category and return its ID', async () => {
+      produtoUseCaseMock.createCategoria.mockResolvedValue('1');
+
+      const categoryInput = {
+        nome: 'Categoria 1',
+      };
+
+      const result = await controller.createCategory(categoryInput);
+
+      expect(result).toEqual({ id: '1' });
+      expect(produtoUseCaseMock.createCategoria).toHaveBeenCalled();
+    });
+  });
 });

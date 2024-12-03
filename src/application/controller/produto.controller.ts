@@ -88,7 +88,7 @@ export class ProdutoController {
     @Param('categoria') categoria: string,
   ): Promise<ProdutoOutput[]> {
     const produtos = await this.produtoUseCase.getByCategoria(categoria);
-    if (produtos.length < 1) {
+    if (!produtos || produtos.length < 1) {
       throw new NotFoundException(
         `Produto com categoria ${categoria} não encontrado.`,
       );
@@ -120,7 +120,7 @@ export class ProdutoController {
   @Post('/categorias')
   async createCategory(@Body() categoriaInput: CategoriaInput) {
     const categoria = new Categoria(categoriaInput.nome);
-    return { id: this.produtoUseCase.createCategoria(categoria) };
+    return { id: await this.produtoUseCase.createCategoria(categoria) };
   }
 
   @Put('/:id')
