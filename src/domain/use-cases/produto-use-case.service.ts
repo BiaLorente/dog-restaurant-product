@@ -2,14 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IProdutoUseCase } from './produto-use-case.interface';
 import { Produto } from '../entities/Produto';
 import { randomUUID } from 'crypto';
-import { IProdutoRepository } from '../repositories/product-repository.interface';
 import { Categoria } from '../entities/Categoria';
+import { IProdutoGateway } from '../ports/produto-gateway.interface';
 
 @Injectable()
 export class ProdutoUseCase implements IProdutoUseCase {
   constructor(
-    @Inject(IProdutoRepository)
-    private readonly produtoRepository: IProdutoRepository,
+    @Inject(IProdutoGateway)
+    private readonly produtoRepository: IProdutoGateway,
   ) {}
 
   async updateStatus(id: string, ativo: boolean): Promise<string> {

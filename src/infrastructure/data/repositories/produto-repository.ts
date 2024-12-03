@@ -1,195 +1,90 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-
-import { Categorias } from '../entities/categoria.entity';
-import { Produtos } from '../entities/produto.entity';
-import { IProdutoRepository } from '../../../domain/repositories/product-repository.interface';
-import { Categoria } from '../../../domain//entities/Categoria';
-import { Produto } from '../../../domain//entities/Produto';
-
-@Injectable()
+import { Inject } from '@nestjs/common';
+import { IDynamoDbRepository } from './dynamodb-repository.interface';
+import { Item } from 'aws-sdk/clients/simpledb';
+import { DynamoDB } from 'aws-sdk';
+import { IProdutoRepository } from 'src/domain/ports/product-repository.interface';
+import { ProdutoModel } from '../db-model/produto.model';
 export class ProductRepository implements IProdutoRepository {
   constructor(
-    @Inject('PRODUTO_REPOSITORY')
-    private readonly produtoRepo: Repository<Produtos>,
-    @Inject('CATEGORIA_REPOSITORY')
-    private readonly categoriaRepo: Repository<Categorias>,
+    @Inject(IDynamoDbRepository)
+    private readonly db: IDynamoDbRepository,
   ) {}
-
-  async updateStatus(id: string, ativo: boolean) {
-    const produtoEntity = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .where('Produtos.ProdutoId = :id', { id: id })
-      .getOne();
-
-    if (!produtoEntity) return undefined;
-    produtoEntity.Ativo = ativo;
-    await this.produtoRepo.save(produtoEntity);
-
-    return id;
+  async create(produto: ProdutoModel): Promise<void> {
+    const item = this.convertProdutoEntityToDynamoItem(produto);
+    try {
+      await this.db.create(item);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
   }
 
-  async create(produto: Produto) {
-    console.log('create', produto);
-    const produtoEntity = new Produtos();
-    console.log('produtoEntity - empty', produtoEntity);
-    produtoEntity.ProdutoId = produto.id;
-    produtoEntity.ProdutoNome = produto.nome;
-    produtoEntity.ProdutoDescricao = produto.descricao;
-    produtoEntity.Preco = produto.preco;
-    produtoEntity.CategoriaId = produto.categoria;
-    produtoEntity.Ativo = produto.ativo;
-    console.log('produtoEntity - filled', produtoEntity);
+  async getAll(): Promise<ProdutoModel[]> {
+    const items = await this.db.readAll();
+    return items.map((item) => this.convertDynamoItemToProduto(item));
+  }
+
+  async getById(id: string): Promise<ProdutoModel | null> {
+    const item = await this.db.read(id);
+    return item ? this.convertDynamoItemToProduto(item) : null;
+  }
+
+  async update(id: string, produto: Partial<ProdutoModel>): Promise<void> {
+    const updateItem = this.convertProdutoPartialEntityToDynamoItem(produto);
 
     try {
-      this.produtoRepo.create(produtoEntity);
-    } catch (error: any) {
-      console.log('error: ', error);
+      await this.db.update(id, updateItem);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
     }
-    console.log('create - passed', produtoEntity);
-    try {
-      await this.produtoRepo.save(produtoEntity);
-    } catch (error: any) {
-      console.log('error: ', error);
-    }
-    console.log('save - passed', produtoEntity);
   }
 
-  async createCategoria(categoria: Categoria) {
-    const categoriaEntity = new Categorias();
+  // async updateStatus(id: string, ativo: boolean): Promise<void> {
+  //   const statusUpdate = { ativo };
 
-    categoriaEntity.CategoriaId = categoria.id;
-    categoriaEntity.CategoriaDescricao = categoria.nome;
+  //   try {
+  //     await this.db.update(id, statusUpdate);
+  //   } catch (error) {
+  //     console.error('Error updating product status:', error);
+  //     throw error;
+  //   }
+  // }
 
-    await this.categoriaRepo.save(categoriaEntity);
-  }
+  convertProdutoPartialEntityToDynamoItem = (
+    produto: Partial<ProdutoModel>,
+  ): DynamoDB.DocumentClient.PutItemInputAttributeMap => {
+    return {
+      ...(produto.id && { produtoId: produto.id }),
+      ...(produto.nome && { produtoNome: produto.nome }),
+      ...(produto.descricao && { produtoDescricao: produto.descricao }),
+      ...(produto.preco && { preco: produto.preco }),
+      ...(produto.categoria && { categoriaId: produto.categoria }),
+      ...(produto.ativo !== undefined && { ativo: produto.ativo }),
+    };
+  };
 
-  async update(id: string, produto: Produto): Promise<string> {
-    const produtoEntity = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .where('Produtos.ProdutoId = :id', { id: id })
-      .getOne();
+  convertProdutoEntityToDynamoItem = (
+    produto: ProdutoModel,
+  ): DynamoDB.DocumentClient.PutItemInputAttributeMap => {
+    return {
+      produtoId: produto.id,
+      produtoNome: produto.nome,
+      produtoDescricao: produto.descricao,
+      preco: produto.preco,
+      categoriaId: produto.categoria,
+      ativo: produto.ativo,
+    };
+  };
 
-    if (!produtoEntity) return undefined;
-
-    produtoEntity.ProdutoNome = produto.nome;
-    produtoEntity.ProdutoDescricao = produto.descricao;
-    produtoEntity.Preco = produto.preco;
-
-    await this.produtoRepo.save(produtoEntity);
-
-    return id;
-  }
-  async getAllCategorias(): Promise<Categoria[]> {
-    const categoriesEntities = await this.categoriaRepo
-      .createQueryBuilder('Categorias')
-      .getMany();
-
-    const categories: Categoria[] = categoriesEntities
-      .map((entity) => {
-        try {
-          return new Categoria(entity.CategoriaDescricao, entity.CategoriaId);
-        } catch (error) {
-          console.error(`Erro ao criar categoria: ${error.message}`);
-        }
-      })
-      .filter((categoria) => categoria !== undefined);
-
-    return categories;
-  }
-
-  async getAll(): Promise<Produto[]> {
-    const produtosEntities = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .getMany();
-
-    const produtos: Produto[] = produtosEntities
-      .map((entity) => {
-        try {
-          return new Produto(
-            entity.ProdutoNome,
-            entity.CategoriaId,
-            entity.Preco,
-            entity.ProdutoDescricao,
-            entity.Ativo,
-            entity.ProdutoId,
-          );
-        } catch (error) {
-          console.error(`Erro ao criar produto: ${error.message}`);
-        }
-      })
-      .filter((produtos) => produtos !== undefined);
-
-    return produtos;
-  }
-
-  async getByNome(nome: string): Promise<Produto | undefined> {
-    const produtoEntity = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .where('Produtos.ProdutoNome = :nome', { nome: nome })
-      .getOne();
-
-    if (!produtoEntity) return undefined;
-
-    const product = new Produto(
-      produtoEntity.ProdutoNome,
-      produtoEntity.CategoriaId,
-      produtoEntity.Preco,
-      produtoEntity.ProdutoDescricao,
-      produtoEntity.Ativo,
-      produtoEntity.ProdutoId,
-    );
-
-    return product;
-  }
-
-  async getById(id: string): Promise<Produto | undefined> {
-    const produtoEntity = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .where('Produtos.ProdutoId = :id', { id: id })
-      .getOne();
-
-    if (!produtoEntity) return undefined;
-
-    const product = new Produto(
-      produtoEntity.ProdutoNome,
-      produtoEntity.CategoriaId,
-      produtoEntity.Preco,
-      produtoEntity.ProdutoDescricao,
-      produtoEntity.Ativo,
-      produtoEntity.ProdutoId,
-    );
-
-    return product;
-  }
-
-  async getByCategoria(categoria: string): Promise<Produto[] | undefined> {
-    const categoriaEntity = await this.categoriaRepo
-      .createQueryBuilder('Categorias')
-      .where('Categorias.CategoriaDescricao = :categoria', {
-        categoria: categoria,
-      })
-      .getOne();
-
-    if (!categoriaEntity) return undefined;
-
-    const productEntities = await this.produtoRepo
-      .createQueryBuilder('Produtos')
-      .where('Produtos.CategoriaId = :categoriaId', {
-        categoriaId: categoriaEntity.CategoriaId,
-      })
-      .getMany();
-
-    const produtos = productEntities.map(
-      (productEntity) =>
-        new Produto(
-          productEntity.ProdutoNome,
-          categoriaEntity.CategoriaId,
-          productEntity.Preco,
-          productEntity.ProdutoDescricao,
-        ),
-    );
-
-    return produtos;
-  }
+  convertDynamoItemToProduto = (dynamoItem: Item): ProdutoModel => {
+    return {
+      id: dynamoItem.Attributes['id'],
+      nome: dynamoItem.Attributes['nome'],
+      descricao: dynamoItem.Attributes['descricao'],
+      preco: dynamoItem.Attributes['preco'],
+      categoria: dynamoItem.Attributes['categoria'],
+      ativo: dynamoItem.Attributes['ativo'],
+    };
+  };
 }
