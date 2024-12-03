@@ -29,7 +29,7 @@ export class ProductRepository implements IProdutoRepository {
     return id;
   }
 
-  create(produto: Produto) {
+  async create(produto: Produto) {
     console.log('create', produto);
     const produtoEntity = new Produtos();
     console.log('produtoEntity - empty', produtoEntity);
@@ -48,7 +48,7 @@ export class ProductRepository implements IProdutoRepository {
     }
     console.log('create - passed', produtoEntity);
     try {
-      this.produtoRepo.save(produtoEntity);
+      await this.produtoRepo.save(produtoEntity);
     } catch (error: any) {
       console.log('error: ', error);
     }
