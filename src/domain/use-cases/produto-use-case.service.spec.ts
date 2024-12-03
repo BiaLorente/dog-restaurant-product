@@ -55,6 +55,37 @@ describe('ProdutoUseCase', () => {
     expect(mockProdutoRepository.updateStatus).toHaveBeenCalledWith(id, ativo);
   });
 
+  it('should update a product', async () => {
+    const id = 'some-id';
+    const produto = new Produto(
+      'some-name',
+      'some-category',
+      100,
+      'Description',
+    );
+    await service.update(id, produto);
+    expect(mockProdutoRepository.update).toHaveBeenCalledWith(id, produto);
+  });
+
+  it('should create a product', async () => {
+    const produto = new Produto(
+      'some-name',
+      'some-category',
+      100,
+      'Description',
+    );
+    await service.create(produto);
+    expect(mockProdutoRepository.create).toHaveBeenCalledWith(produto);
+  });
+
+  it('should create a category', async () => {
+    const category = new Categoria('some-name');
+    await service.createCategoria(category);
+    expect(mockProdutoRepository.createCategoria).toHaveBeenCalledWith(
+      category,
+    );
+  });
+
   it('should get all categories', async () => {
     await service.getAllCategorias();
     expect(mockProdutoRepository.getAllCategorias).toHaveBeenCalled();
