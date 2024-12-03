@@ -3,17 +3,17 @@ import { Repository } from 'typeorm';
 
 import { Categorias } from '../entities/categoria.entity';
 import { Produtos } from '../entities/produto.entity';
-import { IProdutoRepository } from 'src/domain/repositories/product-repository.interface';
-import { Categoria } from 'src/domain/entities/Categoria';
-import { Produto } from 'src/domain/entities/Produto';
+import { IProdutoRepository } from '../../../domain/repositories/product-repository.interface';
+import { Categoria } from '../../../domain//entities/Categoria';
+import { Produto } from '../../../domain//entities/Produto';
 
 @Injectable()
 export class ProductRepository implements IProdutoRepository {
   constructor(
     @Inject('PRODUTO_REPOSITORY')
-    private produtoRepo: Repository<Produtos>,
+    private readonly produtoRepo: Repository<Produtos>,
     @Inject('CATEGORIA_REPOSITORY')
-    private categoriaRepo: Repository<Categorias>,
+    private readonly categoriaRepo: Repository<Categorias>,
   ) {}
 
   async updateStatus(id: string, ativo: boolean) {

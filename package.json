@@ -78,7 +78,9 @@
       "src/infrastructure/data/database.module.ts",
       "src/infrastructure/data/database.provider.ts",
       "src/infrastructure/data/repositories/categoria.provider.ts",
-      "src/infrastructure/data/repositories/produto.provider.ts"
+      "src/infrastructure/data/repositories/produto.provider.ts",
+      "src/infrastructure/data/repositories/produto-repository.ts",
+      "src/infrastructure/data/entities"
     ]
   }
 }
