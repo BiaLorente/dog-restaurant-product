@@ -6,9 +6,9 @@ import { ProdutoUseCase } from 'src/domain/use-cases/produto-use-case.service';
 import { ProductRepository } from 'src/infrastructure/data/repositories/produto-repository';
 import { ProdutoGateway } from 'src/domain/adapters/product.gateway';
 import { IProdutoGateway } from 'src/domain/ports/produto-gateway.interface';
-import { ProductDynamoDbRepository } from 'src/infrastructure/data/repositories/produtos-dynamodb.repository';
-import { IDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamodb-repository.interface';
-import { CategoryDynamoDbRepository } from 'src/infrastructure/data/repositories/categorias-dynamodb.repository';
+import { ProductDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/produtos-dynamodb.repository';
+import { IDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/dynamodb-repository.interface';
+import { CategoryDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/categorias-dynamodb.repository';
 
 @Module({
   imports: [],

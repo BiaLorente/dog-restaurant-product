@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { IDynamoDbRepository } from './dynamodb-repository.interface';
+import { IDynamoDbRepository } from './dynamo/dynamodb-repository.interface';
 import { CategoriaModel } from '../db-model/categoria.model';
 import { DynamoDB } from 'aws-sdk';
 import { Item } from 'aws-sdk/clients/simpledb';

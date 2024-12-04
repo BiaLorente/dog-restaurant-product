@@ -1,5 +1,5 @@
 import { Inject } from '@nestjs/common';
-import { IDynamoDbRepository } from './dynamodb-repository.interface';
+import { IDynamoDbRepository } from './dynamo/dynamodb-repository.interface';
 import { Item } from 'aws-sdk/clients/simpledb';
 import { DynamoDB } from 'aws-sdk';
 import { IProdutoRepository } from 'src/domain/ports/product-repository.interface';
