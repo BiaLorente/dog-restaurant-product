@@ -20,12 +20,19 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.699.0",
+    "@aws-sdk/credential-providers": "^3.699.0",
+    "@aws-sdk/lib-dynamodb": "^3.704.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
-    "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1",
     "@nestjs/swagger": "^7.3.1",
+    "rxjs": "^7.8.1",
+    "@types/axios": "^0.14.4",
+    "aws-sdk": "^2.1692.0",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "reflect-metadata": "^0.2.0",
     "swagger-ui-express": "^5.0.0",
     "typeorm": "^0.3.20"
   },
@@ -80,7 +87,10 @@
       "src/infrastructure/data/repositories/categoria.provider.ts",
       "src/infrastructure/data/repositories/produto.provider.ts",
       "src/infrastructure/data/repositories/produto-repository.ts",
-      "src/infrastructure/data/entities"
+      "src/infrastructure/data/entities",
+      "src/domain/ports",
+      "src/infrastructure/data/repositories",
+      "src/domain/adapters"
     ]
   }
 }

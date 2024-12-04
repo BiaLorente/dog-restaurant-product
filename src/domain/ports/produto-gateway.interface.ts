@@ -1,7 +1,7 @@
 import { Categoria } from '../entities/Categoria';
 import { Produto } from '../entities/Produto';
 
-export interface IProdutoRepository {
+export interface IProdutoGateway {
   create(produto: Produto);
   createCategoria(categoria: Categoria);
   update(id: string, produto: Produto);
@@ -12,4 +12,4 @@ export interface IProdutoRepository {
   getAllCategorias(): Promise<Categoria[]>;
   getAll(): Promise<Produto[]>;
 }
-export const IProdutoRepository = Symbol('IProdutoRepository');
+export const IProdutoGateway = Symbol('IProdutoGateway');
