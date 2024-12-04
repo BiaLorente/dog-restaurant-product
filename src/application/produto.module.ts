@@ -9,6 +9,8 @@ import { IProdutoGateway } from 'src/domain/ports/produto-gateway.interface';
 import { ProductDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/produtos-dynamodb.repository';
 import { IDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/dynamodb-repository.interface';
 import { CategoryDynamoDbRepository } from 'src/infrastructure/data/repositories/dynamo/categorias-dynamodb.repository';
+import { ICategoriaRepository } from 'src/domain/ports/category-repository.interface';
+import { CategoriaRepository } from 'src/infrastructure/data/repositories/categoria-repository';
 
 @Module({
   imports: [],
@@ -18,6 +20,11 @@ import { CategoryDynamoDbRepository } from 'src/infrastructure/data/repositories
     {
       provide: IProdutoRepository,
       useClass: ProductRepository,
+    },
+    CategoriaRepository,
+    {
+      provide: ICategoriaRepository,
+      useClass: CategoriaRepository,
     },
     ProdutoUseCase,
     {
