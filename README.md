@@ -58,6 +58,9 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+Test Coverage: 85.3%
+![image](https://github.com/user-attachments/assets/47d3e550-51ae-487c-9a1f-3be1e1f96531)
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
